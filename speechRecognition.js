@@ -44,110 +44,110 @@ if ("webkitSpeechRecognition" in window) {
 
 
   //Audio - listening
-  const recordAudio = () =>
-  new Promise(async resolve => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mediaRecorder = new MediaRecorder(stream);
-    let audioChunks = [];
+//   const recordAudio = () =>
+//   new Promise(async resolve => {
+//     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+//     const mediaRecorder = new MediaRecorder(stream);
+//     let audioChunks = [];
 
-    mediaRecorder.addEventListener('dataavailable', event => {
-      audioChunks.push(event.data);
-    });
+//     mediaRecorder.addEventListener('dataavailable', event => {
+//       audioChunks.push(event.data);
+//     });
 
-    const start = () => {
-      audioChunks = [];
-      mediaRecorder.start();
-    };
+//     const start = () => {
+//       audioChunks = [];
+//       mediaRecorder.start();
+//     };
 
-    const stop = () =>
-      new Promise(resolve => {
-        mediaRecorder.addEventListener('stop', () => {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
-          const audioUrl = URL.createObjectURL(audioBlob);
-          const audio = new Audio(audioUrl);
-          const play = () => audio.play();
-          resolve({ audioChunks, audioBlob, audioUrl, play });
-        });
+//     const stop = () =>
+//       new Promise(resolve => {
+//         mediaRecorder.addEventListener('stop', () => {
+//           const audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
+//           const audioUrl = URL.createObjectURL(audioBlob);
+//           const audio = new Audio(audioUrl);
+//           const play = () => audio.play();
+//           resolve({ audioChunks, audioBlob, audioUrl, play });
+//         });
 
-        mediaRecorder.stop();
-      });
+//         mediaRecorder.stop();
+//       });
 
-    resolve({ start, stop });
-  });
+//     resolve({ start, stop });
+//   });
 
-const sleep = time => new Promise(resolve => setTimeout(resolve, time));
+// const sleep = time => new Promise(resolve => setTimeout(resolve, time));
 
-const recordButton = document.querySelector('#record');
-const stopButton = document.querySelector('#stop');
-const playButton = document.querySelector('#play');
-const saveButton = document.querySelector('#save');
-const savedAudioMessagesContainer = document.querySelector('#saved-audio-messages');
+// const recordButton = document.querySelector('#record');
+// const stopButton = document.querySelector('#stop');
+// const playButton = document.querySelector('#play');
+// const saveButton = document.querySelector('#save');
+// const savedAudioMessagesContainer = document.querySelector('#saved-audio-messages');
 
-let recorder;
-let audio;
+// let recorder;
+// let audio;
 
-recordButton.addEventListener('click', async () => {
-  recordButton.setAttribute('disabled', true);
-  stopButton.removeAttribute('disabled');
-  playButton.setAttribute('disabled', true);
-  saveButton.setAttribute('disabled', true);
-  if (!recorder) {
-    recorder = await recordAudio();
-  }
-  recorder.start();
-});
+// recordButton.addEventListener('click', async () => {
+//   recordButton.setAttribute('disabled', true);
+//   stopButton.removeAttribute('disabled');
+//   playButton.setAttribute('disabled', true);
+//   saveButton.setAttribute('disabled', true);
+//   if (!recorder) {
+//     recorder = await recordAudio();
+//   }
+//   recorder.start();
+// });
 
-stopButton.addEventListener('click', async () => {
-  recordButton.removeAttribute('disabled');
-  stopButton.setAttribute('disabled', true);
-  playButton.removeAttribute('disabled');
-  saveButton.removeAttribute('disabled');
-  audio = await recorder.stop();
-});
+// stopButton.addEventListener('click', async () => {
+//   recordButton.removeAttribute('disabled');
+//   stopButton.setAttribute('disabled', true);
+//   playButton.removeAttribute('disabled');
+//   saveButton.removeAttribute('disabled');
+//   audio = await recorder.stop();
+// });
 
-playButton.addEventListener('click', () => {
-  audio.play();
-});
+// playButton.addEventListener('click', () => {
+//   audio.play();
+// });
 
-saveButton.addEventListener('click', () => {
-  const reader = new FileReader();
-  reader.readAsDataURL(audio.audioBlob);
-  reader.onload = () => {
-    const base64AudioMessage = reader.result.split(',')[1];
+// saveButton.addEventListener('click', () => {
+//   const reader = new FileReader();
+//   reader.readAsDataURL(audio.audioBlob);
+//   reader.onload = () => {
+//     const base64AudioMessage = reader.result.split(',')[1];
 
-    fetch('http://localhost:3545/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: base64AudioMessage })
-    }).then(res => {
-      if (res.status === 201) {
-        return populateAudioMessages();
-      }
-      console.log('Invalid status saving audio message: ' + res.status);
-    });
-  };
-});
+//     fetch('http://localhost:3545/messages', {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({ message: base64AudioMessage })
+//     }).then(res => {
+//       if (res.status === 201) {
+//         return populateAudioMessages();
+//       }
+//       console.log('Invalid status saving audio message: ' + res.status);
+//     });
+//   };
+// });
 
-const populateAudioMessages = () => {
-  return fetch('http://localhost:3545/messages',{
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-  }).then(res => {
-    if (res.status === 200) {
-      return res.json().then(json => {
-        json.messageFilenames.forEach(filename => {
-          let audioElement = document.querySelector(`[data-audio-filename="${filename}"]`);
-          if (!audioElement) {
-            audioElement = document.createElement('audio');
-            audioElement.src = `/messages/${filename}`;
-            audioElement.setAttribute('data-audio-filename', filename);
-            audioElement.setAttribute('controls', true);
-            savedAudioMessagesContainer.appendChild(audioElement);
-          }
-        });
-      });
-    }
-    console.log('Invalid status getting messages: ' + res.status);
-  });
-};
+// const populateAudioMessages = () => {
+//   return fetch('http://localhost:3545/messages',{
+//       method: 'GET',
+//       headers: { 'Content-Type': 'application/json' },
+//   }).then(res => {
+//     if (res.status === 200) {
+//       return res.json().then(json => {
+//         json.messageFilenames.forEach(filename => {
+//           let audioElement = document.querySelector(`[data-audio-filename="${filename}"]`);
+//           if (!audioElement) {
+//             audioElement = document.createElement('audio');
+//             audioElement.src = `/messages/${filename}`;
+//             audioElement.setAttribute('data-audio-filename', filename);
+//             audioElement.setAttribute('controls', true);
+//             savedAudioMessagesContainer.appendChild(audioElement);
+//           }
+//         });
+//       });
+//     }
+//     console.log('Invalid status getting messages: ' + res.status);
+//   });
+// };
 // populateAudioMessages();
